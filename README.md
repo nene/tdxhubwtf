@@ -1,5 +1,128 @@
 # The Daily XHub WTF
 
+## Tuesday Mar 21: React as a data-structure
+
+I was investigating how our `DurationTab` component works:
+
+```js
+<AbstractTab
+    tabId="duration"
+    title="Slow Requests"
+    issues={ issues }
+>
+    <TabColumn type="entryPoint" name="ENTRY POINT">
+        { this.renderEntryPointColumn }
+    </TabColumn>
+    <TabColumn type="scope" name="SCOPE">
+        { this.renderScopeColumn }
+    </TabColumn>
+</AbstractTab>
+```
+
+Besides the odd thing that we're passing a function
+to the TabColumn through children property, this looks pretty nice.
+
+I wonder how this TabColumn works:
+
+```js
+export default class TabColumn extends PureComponent {
+    render() {
+        return this.props.children;
+    }
+}
+```
+
+Oh... so it ignores all the props besides `children`
+(which is a function, as you remembered earlier).
+But the code definitely relies on these props being
+passed to TabColumn.
+
+So, let's take a look inside AbstractTab itself, where
+among other things we find:
+
+```js
+<tbody>
+    { visibleItems.map((row, i) => {
+        // ... SKIP ...
+        return (
+            <Row
+                key={ row.id }
+                row={ row }
+                renderers={ children }
+            />
+        );
+    } ) }
+</tbody>
+```
+
+So the TabColumn elements get passed to Row component,
+which loops over them and uses the function from children
+as a constructor of a react component:
+
+```js
+<tr className="application-tab-data-row">
+    { React.Children.map(renderers, element => {
+        const { type, children: RowRenderer } = element.props;
+
+        return <RowRenderer key={ type } { ...this.props } />;
+    }) }
+</tr>
+```
+
+And one of these render-functions
+(that was referenced in the top-most code-snippet)
+is defined like so:
+
+```js
+class DurationTab extends PureComponent {
+    // ... snip ...
+
+    renderScopeColumn = ({ row }) => {
+        const { issues } = this.props;
+
+        return (
+            <td className="application-tab-column">
+                { issues.thresholds.scope > row.lastDurationStats.scope ? (
+                    <span>outlier</span>
+                ) : (
+                    <span><PrettyNumber value={ row.lastDurationStats.scope } decimal={ 1 } />%</span>
+                ) }
+            </td>
+        );
+    }
+}
+```
+
+On one hand this function is used as a React functional component.
+So all its props should come through parameters.
+But it also makes use of `this.props`. How come?
+
+Turns out that this code is making use of proposed ECMAScript feature
+for defining class instance variables. Effectively the above code
+translates to:
+
+```js
+constructor() {
+    this.renderScopeColumn = ({ row }) => { ... };
+}
+```
+
+What the original programmer really wanted to do, was:
+
+```js
+<AbstractTab
+    tabId="duration"
+    title="Slow Requests"
+    issues={ issues }
+    columns={ [
+        {type: "entryPoint", name: "ENTRY POINT", render: this.renderEntryPointColumn.bind(this)},
+        {type: "scope", name: "SCOPE", render: this.renderScopeColumn.bind(this)},
+    ] }
+/>
+```
+
+But clearly, that would not have been Reacty enough.
+
 ## Thursday Feb 27: Real programmers write in binary
 
 I was investigating `/user/state` saving, where a simple
