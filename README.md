@@ -1,5 +1,22 @@
 # The Daily XHub WTF
 
+## Friday Mar 23: Delete it! 4real!
+
+Today I stumbled upon the following wonderful snippet:
+
+```js
+item.exceptions = undefined;
+delete item.exceptions;
+```
+
+I thought: somebody must have first implemented the removal
+of the field by setting it undefined, and later somebody else
+decided to completely delete the field, without bothering to
+remove the first line.
+
+Then I looked at the change log, and saw that these two lines
+were added explicitly in a commit titled "performance optimizations".
+
 ## Tuesday Mar 21: React as a data-structure
 
 I was investigating how our `DurationTab` component works:
