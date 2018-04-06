@@ -1,5 +1,63 @@
 # The Daily XHub WTF
 
+## Friday Apr 6: JavaScript needs no classes
+
+Functional programming is all the craze these days,
+don't you come to me with your classes and OOP.
+If you want a method, you can simply attach one to
+the object like so:
+
+```js
+dataRange.isVersionsSelected = isVersionsSelected.bind(dataRange);
+```
+
+And then you could can even destructure that function
+out of the object and call it separately:
+
+```js
+function paramsFromDataRange({ start, end, prevStart, prevEnd, isVersionsSelected }) {
+    if (isVersionsSelected()) {
+        return {
+            // Parameters for version-range
+        };
+    }
+
+    return {
+        // Parameters for period range
+    };
+}
+```
+
+Or when you're not sure that dataRange object has that method,
+you can take measures that your code it still works:
+
+```js
+if (isVersionsSelected.call(action.dataRange)) {
+    ...
+}
+```
+
+Only a Java-minded-OOP-maniac would think of replacing all these
+conditional branches sprinkled throughout the codebase with
+two classes where one implements a range of versions,
+and another that implements range of dates:
+
+```js
+class VersionRange {
+    urlParams() { ... }
+}
+
+class PeriodRange {
+    urlParams() { ... }
+}
+```
+
+When you leave out React components, the whole XHub codebase
+contains just three classes. Everything else is contained in
+nice and pretty functions. These functions might be several
+hundred lines long, but they're functions.
+Functional programming FTW!
+
 ## Friday Mar 23: Delete it! 4real!
 
 Today I stumbled upon the following wonderful snippet:
