@@ -2,16 +2,16 @@
 
 ## Friday Apr 6: JavaScript needs no classes
 
-Functional programming is all the craze these days,
-don't you come to me with your classes and OOP.
-If you want a method, you can simply attach one to
-the object like so:
+Functional programming is all the craze these days.
+You don't need OOP, when you can do functional.
+If you really insist on having a method,
+you can attach one to an object:
 
 ```js
 dataRange.isVersionsSelected = isVersionsSelected.bind(dataRange);
 ```
 
-And then you could can even destructure that function
+And then you could even destructure that function
 out of the object and call it separately:
 
 ```js
@@ -28,7 +28,7 @@ function paramsFromDataRange({ start, end, prevStart, prevEnd, isVersionsSelecte
 }
 ```
 
-Or when you're not sure that dataRange object has that method,
+Or when you're not sure that your object has that method,
 you can take measures that your code it still works:
 
 ```js
